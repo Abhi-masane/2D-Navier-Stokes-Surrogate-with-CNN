@@ -1,0 +1,620 @@
+{
+  "source": "OpenFOAM simpleFoam steady laminar cylinder sweep, Re 5-40",
+  "grid": {
+    "x": [
+      -5.0,
+      15.0
+    ],
+    "y": [
+      -5.0,
+      5.0
+    ],
+    "z_mid": 0.05,
+    "nx": 129,
+    "ny": 65
+  },
+  "normalisation": "ux/U_in, uy/U_in, p/U_in^2",
+  "re_max": 40.0,
+  "cases": [
+    {
+      "file": "case_Re_005.00.npz",
+      "Re": 5.0,
+      "U_in": 0.05,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_005.35.npz",
+      "Re": 5.353535,
+      "U_in": 0.053535,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_005.71.npz",
+      "Re": 5.707071,
+      "U_in": 0.057071,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_006.06.npz",
+      "Re": 6.060606,
+      "U_in": 0.060606,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_006.41.npz",
+      "Re": 6.414141,
+      "U_in": 0.064141,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_006.77.npz",
+      "Re": 6.767677,
+      "U_in": 0.067677,
+      "split": "test"
+    },
+    {
+      "file": "case_Re_007.12.npz",
+      "Re": 7.121212,
+      "U_in": 0.071212,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_007.47.npz",
+      "Re": 7.474747,
+      "U_in": 0.074747,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_007.83.npz",
+      "Re": 7.828283,
+      "U_in": 0.078283,
+      "split": "val"
+    },
+    {
+      "file": "case_Re_008.18.npz",
+      "Re": 8.181818,
+      "U_in": 0.081818,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_008.54.npz",
+      "Re": 8.535354,
+      "U_in": 0.085354,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_008.89.npz",
+      "Re": 8.888889,
+      "U_in": 0.088889,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_009.24.npz",
+      "Re": 9.242424,
+      "U_in": 0.092424,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_009.60.npz",
+      "Re": 9.59596,
+      "U_in": 0.09596,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_009.95.npz",
+      "Re": 9.949495,
+      "U_in": 0.099495,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_010.30.npz",
+      "Re": 10.30303,
+      "U_in": 0.10303,
+      "split": "test"
+    },
+    {
+      "file": "case_Re_010.66.npz",
+      "Re": 10.656566,
+      "U_in": 0.106566,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_011.01.npz",
+      "Re": 11.010101,
+      "U_in": 0.110101,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_011.36.npz",
+      "Re": 11.363636,
+      "U_in": 0.113636,
+      "split": "val"
+    },
+    {
+      "file": "case_Re_011.72.npz",
+      "Re": 11.717172,
+      "U_in": 0.117172,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_012.07.npz",
+      "Re": 12.070707,
+      "U_in": 0.120707,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_012.42.npz",
+      "Re": 12.424242,
+      "U_in": 0.124242,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_012.78.npz",
+      "Re": 12.777778,
+      "U_in": 0.127778,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_013.13.npz",
+      "Re": 13.131313,
+      "U_in": 0.131313,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_013.48.npz",
+      "Re": 13.484848,
+      "U_in": 0.134848,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_013.84.npz",
+      "Re": 13.838384,
+      "U_in": 0.138384,
+      "split": "test"
+    },
+    {
+      "file": "case_Re_014.19.npz",
+      "Re": 14.191919,
+      "U_in": 0.141919,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_014.55.npz",
+      "Re": 14.545455,
+      "U_in": 0.145455,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_014.90.npz",
+      "Re": 14.89899,
+      "U_in": 0.14899,
+      "split": "val"
+    },
+    {
+      "file": "case_Re_015.25.npz",
+      "Re": 15.252525,
+      "U_in": 0.152525,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_015.61.npz",
+      "Re": 15.606061,
+      "U_in": 0.156061,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_015.96.npz",
+      "Re": 15.959596,
+      "U_in": 0.159596,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_016.31.npz",
+      "Re": 16.313131,
+      "U_in": 0.163131,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_016.67.npz",
+      "Re": 16.666667,
+      "U_in": 0.166667,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_017.02.npz",
+      "Re": 17.020202,
+      "U_in": 0.170202,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_017.37.npz",
+      "Re": 17.373737,
+      "U_in": 0.173737,
+      "split": "test"
+    },
+    {
+      "file": "case_Re_017.73.npz",
+      "Re": 17.727273,
+      "U_in": 0.177273,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_018.08.npz",
+      "Re": 18.080808,
+      "U_in": 0.180808,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_018.43.npz",
+      "Re": 18.434343,
+      "U_in": 0.184343,
+      "split": "val"
+    },
+    {
+      "file": "case_Re_018.79.npz",
+      "Re": 18.787879,
+      "U_in": 0.187879,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_019.14.npz",
+      "Re": 19.141414,
+      "U_in": 0.191414,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_019.49.npz",
+      "Re": 19.494949,
+      "U_in": 0.194949,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_019.85.npz",
+      "Re": 19.848485,
+      "U_in": 0.198485,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_020.20.npz",
+      "Re": 20.20202,
+      "U_in": 0.20202,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_020.56.npz",
+      "Re": 20.555556,
+      "U_in": 0.205556,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_020.91.npz",
+      "Re": 20.909091,
+      "U_in": 0.209091,
+      "split": "test"
+    },
+    {
+      "file": "case_Re_021.26.npz",
+      "Re": 21.262626,
+      "U_in": 0.212626,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_021.62.npz",
+      "Re": 21.616162,
+      "U_in": 0.216162,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_021.97.npz",
+      "Re": 21.969697,
+      "U_in": 0.219697,
+      "split": "val"
+    },
+    {
+      "file": "case_Re_022.32.npz",
+      "Re": 22.323232,
+      "U_in": 0.223232,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_022.68.npz",
+      "Re": 22.676768,
+      "U_in": 0.226768,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_023.03.npz",
+      "Re": 23.030303,
+      "U_in": 0.230303,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_023.38.npz",
+      "Re": 23.383838,
+      "U_in": 0.233838,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_023.74.npz",
+      "Re": 23.737374,
+      "U_in": 0.237374,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_024.09.npz",
+      "Re": 24.090909,
+      "U_in": 0.240909,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_024.44.npz",
+      "Re": 24.444444,
+      "U_in": 0.244444,
+      "split": "test"
+    },
+    {
+      "file": "case_Re_024.80.npz",
+      "Re": 24.79798,
+      "U_in": 0.24798,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_025.15.npz",
+      "Re": 25.151515,
+      "U_in": 0.251515,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_025.51.npz",
+      "Re": 25.505051,
+      "U_in": 0.255051,
+      "split": "val"
+    },
+    {
+      "file": "case_Re_025.86.npz",
+      "Re": 25.858586,
+      "U_in": 0.258586,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_026.21.npz",
+      "Re": 26.212121,
+      "U_in": 0.262121,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_026.57.npz",
+      "Re": 26.565657,
+      "U_in": 0.265657,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_026.92.npz",
+      "Re": 26.919192,
+      "U_in": 0.269192,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_027.27.npz",
+      "Re": 27.272727,
+      "U_in": 0.272727,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_027.63.npz",
+      "Re": 27.626263,
+      "U_in": 0.276263,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_027.98.npz",
+      "Re": 27.979798,
+      "U_in": 0.279798,
+      "split": "test"
+    },
+    {
+      "file": "case_Re_028.33.npz",
+      "Re": 28.333333,
+      "U_in": 0.283333,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_028.69.npz",
+      "Re": 28.686869,
+      "U_in": 0.286869,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_029.04.npz",
+      "Re": 29.040404,
+      "U_in": 0.290404,
+      "split": "val"
+    },
+    {
+      "file": "case_Re_029.39.npz",
+      "Re": 29.393939,
+      "U_in": 0.293939,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_029.75.npz",
+      "Re": 29.747475,
+      "U_in": 0.297475,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_030.10.npz",
+      "Re": 30.10101,
+      "U_in": 0.30101,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_030.45.npz",
+      "Re": 30.454545,
+      "U_in": 0.304545,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_030.81.npz",
+      "Re": 30.808081,
+      "U_in": 0.308081,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_031.16.npz",
+      "Re": 31.161616,
+      "U_in": 0.311616,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_031.52.npz",
+      "Re": 31.515152,
+      "U_in": 0.315152,
+      "split": "test"
+    },
+    {
+      "file": "case_Re_031.87.npz",
+      "Re": 31.868687,
+      "U_in": 0.318687,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_032.22.npz",
+      "Re": 32.222222,
+      "U_in": 0.322222,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_032.58.npz",
+      "Re": 32.575758,
+      "U_in": 0.325758,
+      "split": "val"
+    },
+    {
+      "file": "case_Re_032.93.npz",
+      "Re": 32.929293,
+      "U_in": 0.329293,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_033.28.npz",
+      "Re": 33.282828,
+      "U_in": 0.332828,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_033.64.npz",
+      "Re": 33.636364,
+      "U_in": 0.336364,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_033.99.npz",
+      "Re": 33.989899,
+      "U_in": 0.339899,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_034.34.npz",
+      "Re": 34.343434,
+      "U_in": 0.343434,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_034.70.npz",
+      "Re": 34.69697,
+      "U_in": 0.34697,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_035.05.npz",
+      "Re": 35.050505,
+      "U_in": 0.350505,
+      "split": "test"
+    },
+    {
+      "file": "case_Re_035.40.npz",
+      "Re": 35.40404,
+      "U_in": 0.35404,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_035.76.npz",
+      "Re": 35.757576,
+      "U_in": 0.357576,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_036.11.npz",
+      "Re": 36.111111,
+      "U_in": 0.361111,
+      "split": "val"
+    },
+    {
+      "file": "case_Re_036.46.npz",
+      "Re": 36.464646,
+      "U_in": 0.364646,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_036.82.npz",
+      "Re": 36.818182,
+      "U_in": 0.368182,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_037.17.npz",
+      "Re": 37.171717,
+      "U_in": 0.371717,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_037.53.npz",
+      "Re": 37.525253,
+      "U_in": 0.375253,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_037.88.npz",
+      "Re": 37.878788,
+      "U_in": 0.378788,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_038.23.npz",
+      "Re": 38.232323,
+      "U_in": 0.382323,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_038.59.npz",
+      "Re": 38.585859,
+      "U_in": 0.385859,
+      "split": "test"
+    },
+    {
+      "file": "case_Re_038.94.npz",
+      "Re": 38.939394,
+      "U_in": 0.389394,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_039.29.npz",
+      "Re": 39.292929,
+      "U_in": 0.392929,
+      "split": "train"
+    },
+    {
+      "file": "case_Re_039.65.npz",
+      "Re": 39.646465,
+      "U_in": 0.396465,
+      "split": "val"
+    },
+    {
+      "file": "case_Re_040.00.npz",
+      "Re": 40.0,
+      "U_in": 0.4,
+      "split": "train"
+    }
+  ]
+}

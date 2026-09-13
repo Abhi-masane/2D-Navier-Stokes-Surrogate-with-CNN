@@ -1,0 +1,14 @@
+# OpenFOAM heavy data
+runs/
+baseCase/[1-9]*
+baseCase/log.*
+baseCase/VTK/
+baseCase/postProcessing/
+
+# Python
+__pycache__/
+*.pyc
+.vscode/
+
+# PyTorch weights (too large for GitHub)
+results/*.pt
