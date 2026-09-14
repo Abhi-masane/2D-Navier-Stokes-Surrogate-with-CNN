@@ -1,31 +1,86 @@
-import torch, torch.nn as nn
+import os
+
+import torch
+import torch.nn as nn
 from torch.utils.data import DataLoader
+
 from dataset import SurrogateDataset
 from model import MiniUNet
 
-torch.manual_seed(0)
-dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print("device:", dev)
 
-tr = DataLoader(SurrogateDataset("../dataset/manifest.json", "train"), 8, shuffle=True)
-va = DataLoader(SurrogateDataset("../dataset/manifest.json", "val"), 8)
-model = MiniUNet().to(dev)
-opt = torch.optim.Adam(model.parameters(), 1e-3)
-mse = nn.MSELoss()
-best = 1e9
-for ep in range(150):
-    model.train(); tl = 0
-    for x, y, mk in tr:
-        x, y, mk = x.to(dev), y.to(dev), mk.to(dev)
-        opt.zero_grad(); pr = model(x)
-        loss = mse(pr * mk, y * mk); loss.backward(); opt.step(); tl += loss.item()
-    model.eval(); vl = 0
+MANIFEST = "../dataset/manifest.json"
+MODEL_PATH = "../results/best.pt"
+BATCH_SIZE = 8
+EPOCHS = 150
+LEARNING_RATE = 1e-3
+
+
+def validate(model, loader, loss_fn, device):
+    model.eval()
+    total_loss = 0.0
+
     with torch.no_grad():
-        for x, y, mk in va:
-            x, y, mk = x.to(dev), y.to(dev), mk.to(dev)
-            vl += mse(model(x) * mk, y * mk).item()
-    tl, vl = tl / len(tr), vl / len(va)
-    print(f"ep {ep:3d} train {tl:.5f} val {vl:.5f}")
-    if vl < best:
-        best = vl; torch.save(model.state_dict(), "../results/best.pt")
-print("best val loss:", best)
+        for inputs, targets, mask in loader:
+            inputs = inputs.to(device)
+            targets = targets.to(device)
+            mask = mask.to(device)
+
+            predictions = model(inputs)
+            loss = loss_fn(predictions * mask, targets * mask)
+            total_loss += loss.item()
+
+    return total_loss / len(loader)
+
+
+def main():
+    torch.manual_seed(0)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print("device:", device)
+
+    train_set = SurrogateDataset(MANIFEST, "train")
+    val_set = SurrogateDataset(MANIFEST, "val")
+
+    train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True)
+    val_loader = DataLoader(val_set, batch_size=BATCH_SIZE)
+
+    model = MiniUNet().to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    loss_fn = nn.MSELoss()
+
+    os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+    best_val_loss = float("inf")
+
+    for epoch in range(EPOCHS):
+        model.train()
+        train_loss = 0.0
+
+        for inputs, targets, mask in train_loader:
+            inputs = inputs.to(device)
+            targets = targets.to(device)
+            mask = mask.to(device)
+
+            optimizer.zero_grad()
+            predictions = model(inputs)
+            loss = loss_fn(predictions * mask, targets * mask)
+            loss.backward()
+            optimizer.step()
+
+            train_loss += loss.item()
+
+        train_loss /= len(train_loader)
+        val_loss = validate(model, val_loader, loss_fn, device)
+
+        print(
+            f"epoch {epoch + 1:3d}/{EPOCHS}  "
+            f"train {train_loss:.5f}  val {val_loss:.5f}"
+        )
+
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            torch.save(model.state_dict(), MODEL_PATH)
+
+    print("best validation loss:", best_val_loss)
+
+
+if __name__ == "__main__":
+    main()

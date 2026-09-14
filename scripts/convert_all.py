@@ -1,254 +1,211 @@
-import glob
 import json
-import os
+from pathlib import Path
 
 import numpy as np
 import pyvista as pv
 
 
-# -----------------------------
-# Fixed sampling grid definition
-# -----------------------------
-X_MIN, X_MAX = -5.0, 15.0
-Y_MIN, Y_MAX = -5.0, 5.0
+X_MIN = -5.0
+X_MAX = 15.0
+Y_MIN = -5.0
+Y_MAX = 5.0
 Z_MID = 0.05
 
-NX, NY = 128, 64
-R = 0.5
+NX = 128
+NY = 64
+CYLINDER_RADIUS = 0.5
 
-os.makedirs("dataset", exist_ok=True)
-
-grid = pv.ImageData(
-    dimensions=(NX + 1, NY + 1, 1),
-    spacing=((X_MAX - X_MIN) / NX, (Y_MAX - Y_MIN) / NY, 1.0),
-    origin=(X_MIN, Y_MIN, Z_MID),
-)
-
-X, Y = np.meshgrid(
-    np.linspace(X_MIN, X_MAX, NX + 1),
-    np.linspace(Y_MIN, Y_MAX, NY + 1),
-)
-
-# 1 = fluid, 0 = cylinder/solid
-mask = (X**2 + Y**2 > R**2).astype(np.float32)
+RUNS_DIR = Path("runs")
+DATASET_DIR = Path("dataset")
 
 
-def array_names(mesh):
-    """Return available field names on a mesh."""
-    names = []
-    if hasattr(mesh, "point_data"):
-        names += list(mesh.point_data.keys())
-    if hasattr(mesh, "cell_data"):
-        names += list(mesh.cell_data.keys())
+def field_names(mesh):
+    names = set(mesh.point_data.keys())
+    names.update(mesh.cell_data.keys())
     return names
 
 
-def has_U_and_p(mesh):
-    names = array_names(mesh)
-    return ("U" in names) and ("p" in names)
+def has_flow_fields(mesh):
+    names = field_names(mesh)
+    return "U" in names and "p" in names
 
 
-def collect_valid_blocks(obj, blocks=None):
-    """
-    Recursively collect non-empty PyVista blocks from a mesh or MultiBlock object.
-    Skips None blocks safely.
-    """
-    if blocks is None:
-        blocks = []
+def mesh_blocks(data):
+    blocks = []
 
-    if obj is None:
+    if isinstance(data, pv.MultiBlock):
+        for block in data:
+            if block is not None:
+                blocks.extend(mesh_blocks(block))
         return blocks
 
-    if isinstance(obj, pv.MultiBlock):
-        for block in obj:
-            collect_valid_blocks(block, blocks)
-    else:
-        try:
-            if obj.n_cells > 0 or obj.n_points > 0:
-                blocks.append(obj)
-        except Exception:
-            pass
+    try:
+        if data.n_cells > 0 or data.n_points > 0:
+            blocks.append(data)
+    except Exception:
+        pass
 
     return blocks
 
 
-def pick_fluid_mesh(data):
-    """
-    Pick the best block from a VTK/MultiBlock file.
-    Preference:
-    1. block containing U and p
-    2. largest block by number of cells
-    """
-    blocks = collect_valid_blocks(data)
-
-    if len(blocks) == 0:
+def choose_mesh(data):
+    blocks = mesh_blocks(data)
+    if not blocks:
         return None
 
-    blocks_with_fields = [b for b in blocks if has_U_and_p(b)]
+    flow_blocks = [block for block in blocks if has_flow_fields(block)]
+    if flow_blocks:
+        return max(flow_blocks, key=lambda block: block.n_cells)
 
-    if blocks_with_fields:
-        return max(blocks_with_fields, key=lambda b: b.n_cells)
-
-    return max(blocks, key=lambda b: b.n_cells)
+    return max(blocks, key=lambda block: block.n_cells)
 
 
-def find_mesh_file(vtk_dir):
-    """
-    Find likely internal mesh VTK file.
-    Prefer filenames containing 'internal'.
-    Otherwise choose the largest VTK-like file.
-    """
-    vtk_files = [
-        f for f in glob.glob(os.path.join(vtk_dir, "*"))
-        if f.endswith((".vtk", ".vtu", ".vtm", ".vtp"))
-    ]
+def find_vtk_file(vtk_dir):
+    valid_suffixes = {".vtk", ".vtu", ".vtm", ".vtp"}
+    files = [path for path in vtk_dir.iterdir() if path.suffix.lower() in valid_suffixes]
 
-    if not vtk_files:
+    if not files:
         return None
 
-    for f in vtk_files:
-        if "internal" in os.path.basename(f).lower():
-            return f
+    for path in files:
+        if "internal" in path.name.lower():
+            return path
 
-    return max(vtk_files, key=os.path.getsize)
+    return max(files, key=lambda path: path.stat().st_size)
 
 
-def get_array(sampled, name):
-    """
-    Get sampled array from point_data or cell_data.
-    After grid.sample(), arrays are usually in point_data.
-    """
+def sampled_array(sampled, name):
     if name in sampled.point_data:
         return np.asarray(sampled.point_data[name])
     if name in sampled.cell_data:
         return np.asarray(sampled.cell_data[name])
-    raise KeyError(f"{name} not found in sampled data")
+    raise KeyError(name)
 
 
-cases = []
+def make_sampling_grid():
+    return pv.ImageData(
+        dimensions=(NX + 1, NY + 1, 1),
+        spacing=((X_MAX - X_MIN) / NX, (Y_MAX - Y_MIN) / NY, 1.0),
+        origin=(X_MIN, Y_MIN, Z_MID),
+    )
 
-for cd in sorted(glob.glob("runs/case_Re_*")):
-    vtk_dir = os.path.join(cd, "VTK")
 
-    if not os.path.isdir(vtk_dir):
-        print("SKIP no VTK directory:", cd)
-        continue
+def make_mask():
+    x = np.linspace(X_MIN, X_MAX, NX + 1)
+    y = np.linspace(Y_MIN, Y_MAX, NY + 1)
+    xx, yy = np.meshgrid(x, y)
+    return (xx**2 + yy**2 > CYLINDER_RADIUS**2).astype(np.float32)
 
-    mesh_file = find_mesh_file(vtk_dir)
 
+def convert_case(case_dir, grid, mask):
+    vtk_dir = case_dir / "VTK"
+    if not vtk_dir.is_dir():
+        print("skip, no VTK directory:", case_dir)
+        return None
+
+    mesh_file = find_vtk_file(vtk_dir)
     if mesh_file is None:
-        print("SKIP no VTK files:", cd)
-        continue
+        print("skip, no VTK file:", case_dir)
+        return None
 
     try:
         raw = pv.read(mesh_file)
-    except Exception as e:
-        print("FAILED reading:", mesh_file)
-        print("Reason:", e)
-        continue
+    except Exception as exc:
+        print("failed to read", mesh_file, "-", exc)
+        return None
 
-    mesh = pick_fluid_mesh(raw)
-
+    mesh = choose_mesh(raw)
     if mesh is None:
-        print("SKIP no valid mesh block:", cd)
-        continue
-
-    if not has_U_and_p(mesh):
-        print("WARNING: selected mesh does not directly show U and p:", cd)
-        print("Available arrays:", array_names(mesh))
+        print("skip, no valid mesh:", case_dir)
+        return None
 
     try:
         sampled = grid.sample(mesh)
-    except Exception as e:
-        print("FAILED sampling:", cd)
-        print("Reason:", e)
-        continue
+        velocity = sampled_array(sampled, "U")
+        pressure = sampled_array(sampled, "p")
+    except Exception as exc:
+        print("failed to sample", case_dir, "-", exc)
+        return None
 
-    try:
-        U = get_array(sampled, "U")
-        p = get_array(sampled, "p")
-    except KeyError as e:
-        print("SKIP missing sampled arrays:", cd)
-        print("Reason:", e)
-        print("Sampled point arrays:", list(sampled.point_data.keys()))
-        print("Sampled cell arrays:", list(sampled.cell_data.keys()))
-        continue
+    velocity = np.nan_to_num(velocity, nan=0.0, posinf=0.0, neginf=0.0)
+    pressure = np.nan_to_num(pressure, nan=0.0, posinf=0.0, neginf=0.0)
 
-    # Replace NaNs and invalid values with zeros.
-    # The mask will later exclude cylinder/solid region from training loss.
-    U = np.nan_to_num(U, nan=0.0, posinf=0.0, neginf=0.0)
-    p = np.nan_to_num(p, nan=0.0, posinf=0.0, neginf=0.0)
+    expected_points = (NX + 1) * (NY + 1)
+    if velocity.shape[0] != expected_points or pressure.shape[0] != expected_points:
+        print("skip, unexpected sampled shape:", case_dir)
+        return None
 
-    expected_points = (NY + 1) * (NX + 1)
+    ux = velocity[:, 0].reshape(NY + 1, NX + 1)
+    uy = velocity[:, 1].reshape(NY + 1, NX + 1)
+    pressure = pressure.reshape(NY + 1, NX + 1)
 
-    if U.shape[0] != expected_points:
-        print("SKIP unexpected U shape:", cd, U.shape)
-        continue
+    reynolds = float((case_dir / "Re.txt").read_text().strip())
+    inlet_velocity = float((case_dir / "U.txt").read_text().strip())
 
-    if p.shape[0] != expected_points:
-        print("SKIP unexpected p shape:", cd, p.shape)
-        continue
-
-    ux = U[:, 0].reshape(NY + 1, NX + 1)
-    uy = U[:, 1].reshape(NY + 1, NX + 1)
-    pp = p.reshape(NY + 1, NX + 1)
-
-    Re_path = os.path.join(cd, "Re.txt")
-    U_path = os.path.join(cd, "U.txt")
-
-    Re = float(open(Re_path).read().strip())
-    U_in = float(open(U_path).read().strip())
-
-    name = os.path.basename(cd)
+    output_name = f"{case_dir.name}.npz"
+    output_path = DATASET_DIR / output_name
 
     np.savez_compressed(
-        f"dataset/{name}.npz",
-        ux=(ux / U_in).astype(np.float32),
-        uy=(uy / U_in).astype(np.float32),
-        p=(pp / (U_in**2)).astype(np.float32),
-        mask=mask.astype(np.float32),
-        Re=np.float32(Re),
-        U_in=np.float32(U_in),
+        output_path,
+        ux=(ux / inlet_velocity).astype(np.float32),
+        uy=(uy / inlet_velocity).astype(np.float32),
+        p=(pressure / inlet_velocity**2).astype(np.float32),
+        mask=mask,
+        Re=np.float32(reynolds),
+        U_in=np.float32(inlet_velocity),
     )
 
-    cases.append(
-        {
-            "file": f"{name}.npz",
-            "Re": Re,
-            "U_in": U_in,
-        }
-    )
-
-    print("converted", name, "Re =", Re)
+    print("converted", case_dir.name, "Re =", reynolds)
+    return {
+        "file": output_name,
+        "Re": reynolds,
+        "U_in": inlet_velocity,
+    }
 
 
-cases.sort(key=lambda c: c["Re"])
-
-# Split by case/Re, never by grid cells.
-for i, c in enumerate(cases):
-    if i % 10 == 5:
-        c["split"] = "test"
-    elif i % 10 == 8:
-        c["split"] = "val"
-    else:
-        c["split"] = "train"
+def assign_splits(cases):
+    for index, case in enumerate(cases):
+        if index % 10 == 5:
+            case["split"] = "test"
+        elif index % 10 == 8:
+            case["split"] = "val"
+        else:
+            case["split"] = "train"
 
 
-manifest = {
-    "source": "OpenFOAM simpleFoam steady laminar cylinder sweep, Re 5-40",
-    "grid": {
-        "x": [X_MIN, X_MAX],
-        "y": [Y_MIN, Y_MAX],
-        "z_mid": Z_MID,
-        "nx": NX + 1,
-        "ny": NY + 1,
-    },
-    "normalisation": "ux/U_in, uy/U_in, p/U_in^2",
-    "re_max": 40.0,
-    "cases": cases,
-}
+def main():
+    DATASET_DIR.mkdir(exist_ok=True)
+    grid = make_sampling_grid()
+    mask = make_mask()
 
-with open("dataset/manifest.json", "w") as f:
-    json.dump(manifest, f, indent=2)
+    cases = []
+    for case_dir in sorted(RUNS_DIR.glob("case_Re_*")):
+        converted = convert_case(case_dir, grid, mask)
+        if converted is not None:
+            cases.append(converted)
 
-print("DONE:", len(cases), "cases converted to dataset/")
+    cases.sort(key=lambda case: case["Re"])
+    assign_splits(cases)
+
+    manifest = {
+        "source": "OpenFOAM simpleFoam steady laminar cylinder sweep, Re 5-40",
+        "grid": {
+            "x": [X_MIN, X_MAX],
+            "y": [Y_MIN, Y_MAX],
+            "z_mid": Z_MID,
+            "nx": NX + 1,
+            "ny": NY + 1,
+        },
+        "normalisation": "ux/U_in, uy/U_in, p/U_in^2",
+        "re_max": 40.0,
+        "cases": cases,
+    }
+
+    with open(DATASET_DIR / "manifest.json", "w") as f:
+        json.dump(manifest, f, indent=2)
+
+    print("finished:", len(cases), "cases written to", DATASET_DIR)
+
+
+if __name__ == "__main__":
+    main()
